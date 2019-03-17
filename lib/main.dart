@@ -25,7 +25,8 @@ class HomePage extends StatefulWidget {
 
 class HomePageState extends State<HomePage> {
   MusicFinder audioPlayer = new MusicFinder();
-  var _songs;
+  List<Song> _songs;
+  Song currSong;
 
   @override
   void initState() {
@@ -38,26 +39,62 @@ class HomePageState extends State<HomePage> {
     songs = new List.from(songs);
 
     setState(() {
-      _songs =  songs;
+      _songs =  songs.cast<Song>();
     });
   }
 
   @override
   Widget build(BuildContext context) {
     return ListView.builder(
-        itemCount: _songs.length,
+        itemCount: _songs.length*2,
         itemBuilder: (context, int i) {
-          return ListTile(
-            title: Text(_songs[i].title),
-            onTap: () => playLocal(_songs[i].uri),
-          );
+          if (i.isOdd) return Divider();
+
+          final index = i ~/ 2;
+          return _buildTile(_songs[index]);
         });
   }
 
-  Future playLocal(String url) async {
-    final result = await audioPlayer.play(url, isLocal: true);
-    if ( result == 1 ){
+  Widget _buildTile(Song song) {
+    bool flag = song.isPlaying;
+    return ListTile(
+      title: Text(song.title, overflow: TextOverflow.fade,),
+      trailing: Icon(
+        flag ? Icons.pause : Icons.play_arrow,
+      ),
+      onTap: () {
+        if ( flag ){
+          pause(song);
+          setState(() {
+            flag = !flag;
+          });
+        } else {
+          playLocal(song);
+          setState(() {
+            flag = !flag;
+          });
+        }
+      },
+    );
+  }
 
+  playLocal(Song song) async {
+    if ( currSong != null && currSong.id != song.id ){
+      currSong.isPlaying = false;
+      audioPlayer.stop();
     }
+    currSong = song;
+    final result = await audioPlayer.play(song.uri, isLocal: true);
+    if ( result == 1 ) setState(() => song.isPlaying = true);
+  }
+
+  pause(Song song) async {
+    final result = await audioPlayer.pause();
+    if (result == 1) setState(() => song.isPlaying = false);
+  }
+
+  stop() async {
+    final result = await audioPlayer.stop();
+//    if (result == 1) setState(() => playerState = PlayerState.stopped);
   }
 }
