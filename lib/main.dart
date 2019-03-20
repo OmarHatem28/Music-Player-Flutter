@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
-import 'dart:async';
 import 'package:flute_music_player/flute_music_player.dart';
+import 'database/DatabaseClient.dart';
+
 
 void main() => runApp(MyApp());
 
@@ -31,7 +32,8 @@ class HomePageState extends State<HomePage> {
   @override
   void initState() {
     super.initState();
-    initPlayer();
+//    initPlayer();
+    DatabaseClient().createDB();
   }
 
   void initPlayer() async {
@@ -39,20 +41,21 @@ class HomePageState extends State<HomePage> {
     songs = new List.from(songs);
 
     setState(() {
-      _songs =  songs.cast<Song>();
+      _songs = songs.cast<Song>();
     });
   }
 
   @override
   Widget build(BuildContext context) {
-    return ListView.builder(
-        itemCount: _songs.length*2,
-        itemBuilder: (context, int i) {
-          if (i.isOdd) return Divider();
-
-          final index = i ~/ 2;
-          return _buildTile(_songs[index]);
-        });
+//    return ListView.builder(
+//        itemCount: _songs.length*2,
+//        itemBuilder: (context, int i) {
+//          if (i.isOdd) return Divider();
+//
+//          final index = i ~/ 2;
+//          return _buildTile(_songs[index]);
+//        });
+    return Text("Hello");
   }
 
   Widget _buildTile(Song song) {
