@@ -27,7 +27,7 @@ class MyApp extends StatelessWidget {
           ),
           body: TabBarView(
             children: myTabs.map((Tab tab) {
-              return buildNavPage(tab.text);
+              return buildNavPage(tab.text, context);
             }).toList(),
           ),
         ),
@@ -35,13 +35,41 @@ class MyApp extends StatelessWidget {
     );
   }
 
-  Widget buildNavPage(String text) {
+  Widget buildNavPage(String text, BuildContext context) {
     if ( text == "Online" ){
-      return Center(child: Text(text),);
+      return OnlinePage();
     } else {
       return HomePage();
     }
   }
+}
+
+class OnlinePage extends StatefulWidget {
+  @override
+  State<StatefulWidget> createState() => OnlinePageState();
+
+}
+
+class OnlinePageState extends State<OnlinePage> {
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      children: <Widget>[
+        YoutubePlayer(
+          context: context,
+          source: "nPt8bK2gbaU",
+          quality: YoutubeQuality.HD,
+          // callbackController is (optional).
+          // use it to control player on your own.
+          callbackController: (controller) {
+//              _videoController = controller;
+          },
+        ),
+        Text("Omar")
+      ],
+    );
+  }
+
 }
 
 class HomePage extends StatefulWidget {
