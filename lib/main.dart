@@ -1,20 +1,46 @@
 import 'package:flutter/material.dart';
 import 'package:flute_music_player/flute_music_player.dart';
 import 'database/DatabaseClient.dart';
+import 'package:youtube_player/youtube_player.dart';
+
 
 void main() => runApp(MyApp());
 
 class MyApp extends StatelessWidget {
+
+  final List<Tab> myTabs = <Tab>[
+    Tab(text: 'Online'),
+    Tab(text: 'Local Songs'),
+  ];
+
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      home: Scaffold(
-        appBar: AppBar(
-          title: Text("Music player"),
+    return DefaultTabController(
+      length: myTabs.length,
+      child: MaterialApp(
+        home: Scaffold(
+          appBar: AppBar(
+            title: Text("Music player"),
+            bottom: TabBar(
+              tabs: myTabs,
+            ),
+          ),
+          body: TabBarView(
+            children: myTabs.map((Tab tab) {
+              return buildNavPage(tab.text);
+            }).toList(),
+          ),
         ),
-        body: HomePage(),
       ),
     );
+  }
+
+  Widget buildNavPage(String text) {
+    if ( text == "Online" ){
+      return Center(child: Text(text),);
+    } else {
+      return HomePage();
+    }
   }
 }
 
@@ -38,21 +64,23 @@ class HomePageState extends State<HomePage> {
   void initPlayer() async {
     records = await DatabaseClient().createDB();
     for (Map<String, dynamic> map in records) {
-      Song song = new Song(map['id'], map['artist'], map['title'], map['album'], map['albumId'], map['duration'], map['uri'], map['albumArt']);
+      Song song = new Song(map['id'], map['artist'], map['title'], map['album'],
+          map['albumId'], map['duration'], map['uri'], map['albumArt']);
       _songs.add(song);
     }
-    setState(() {
-      print(_songs[1].title);
-    });
+    setState(() {});
   }
 
   @override
   Widget build(BuildContext context) {
-    return _buildPage();
+    return Container(
+      child: _buildPage(),
+      margin: EdgeInsets.fromLTRB(0.0, 10.0, 0, 0),
+    );
   }
 
   Widget _buildPage() {
-    if ( _songs != null ){
+    if (_songs != null) {
       return ListView.builder(
           itemCount: _songs.length*2,
           itemBuilder: (context, int i) {
@@ -75,18 +103,16 @@ class HomePageState extends State<HomePage> {
       trailing: Icon(
         flag ? Icons.pause : Icons.play_arrow,
       ),
+      subtitle: song.artist == "<unknown>" ? null : Text(song.artist),
       onTap: () {
         if (flag) {
           pause(song);
-          setState(() {
-            flag = !flag;
-          });
         } else {
           playLocal(song);
-          setState(() {
-            flag = !flag;
-          });
         }
+        setState(() {
+          flag = !flag;
+        });
       },
     );
   }
