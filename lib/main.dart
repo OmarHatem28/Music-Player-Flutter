@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:music_player/allSongs.dart';
-import 'package:music_player/localPage.dart';
+import 'package:music_player/playlists.dart';
 import 'package:music_player/onlinePage.dart';
 
 
@@ -42,7 +42,7 @@ class MyApp extends StatelessWidget {
     else if ( text == 'All Songs' ){
       return AllSongs();
     }
-    return LocalPage();
+    return PlayList();
   }
 }
 

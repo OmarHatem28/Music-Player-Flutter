@@ -1,12 +1,11 @@
 import 'package:flutter/material.dart';
-import 'package:music_player/allSongs.dart';
 
-class LocalPage extends StatefulWidget {
+class PlayList extends StatefulWidget {
   @override
-  State<StatefulWidget> createState() => LocalPageState();
+  State<StatefulWidget> createState() => PlayListState();
 }
 
-class LocalPageState extends State<LocalPage> {
+class PlayListState extends State<PlayList> {
   @override
   void initState() {
     super.initState();
