@@ -10,9 +10,13 @@ class HomePage extends StatefulWidget {
 
 class HomePageState extends State<HomePage> {
   MusicFinder audioPlayer = new MusicFinder();
+
   List<Map<String, dynamic>> records;
   List<Song> _songs = new List();
+  List<Song> filtered = new List();
   Song currSong;
+  int position;
+  TextEditingController _c;
 
   @override
   void initState() {
@@ -21,32 +25,44 @@ class HomePageState extends State<HomePage> {
   }
 
   void initPlayer() async {
+    _c = new TextEditingController();
     records = await DatabaseClient().createDB();
     for (Map<String, dynamic> map in records) {
       Song song = new Song(map['id'], map['artist'], map['title'], map['album'],
           map['albumId'], map['duration'], map['uri'], map['albumArt']);
       _songs.add(song);
     }
-    setState(() {});
+    setState(() {
+      filtered.addAll(_songs);
+    });
   }
 
   @override
   Widget build(BuildContext context) {
     return Container(
-      child: _buildPage(),
+      child: Column(
+        children: <Widget>[
+          Expanded(
+            child: makeLocalSearchView(),
+            flex: 0,
+          ),
+          Expanded(child: _buildPage()),
+        ],
+      ),
       margin: EdgeInsets.fromLTRB(0.0, 10.0, 0, 0),
+//      height: 300,
     );
   }
 
   Widget _buildPage() {
-    if (_songs != null) {
+    if (filtered != null) {
       return ListView.builder(
-          itemCount: _songs.length * 2,
+          itemCount: filtered.length * 2,
           itemBuilder: (context, int i) {
             if (i.isOdd) return Divider();
 
             final index = i ~/ 2;
-            return _buildTile(_songs[index]);
+            return _buildTile(filtered[index]);
           });
     }
     return Text("Hello");
@@ -61,15 +77,15 @@ class HomePageState extends State<HomePage> {
       ),
       leading: song.albumArt == "null"
           ? Image.asset(
-        "images/download.jpg",
-        width: 80,
-        height: 60,
-      )
+              "images/download.jpg",
+              width: 80,
+              height: 60,
+            )
           : Image.file(
-        getImage(song.albumArt),
-        width: 80,
-        height: 60,
-      ),
+              getImage(song.albumArt),
+              width: 80,
+              height: 60,
+            ),
       trailing: Icon(
         flag ? Icons.pause : Icons.play_arrow,
       ),
@@ -94,6 +110,13 @@ class HomePageState extends State<HomePage> {
     }
     currSong = song;
     final result = await audioPlayer.play(song.uri, isLocal: true);
+    audioPlayer.setCompletionHandler(() {
+      print("Completed");
+      stop();
+      setState(() {
+        position = song.duration;
+      });
+    });
     if (result == 1) setState(() => song.isPlaying = true);
   }
 
@@ -104,10 +127,48 @@ class HomePageState extends State<HomePage> {
 
   stop() async {
     final result = await audioPlayer.stop();
-//    if (result == 1) setState(() => playerState = PlayerState.stopped);
+    print("inside");
+    filtered.forEach((song) {
+      if ( song.title == currSong.title ){
+        song.isPlaying = false;
+        return;
+      }
+    });
+//    if (result == 1) setState(() => {});
   }
 
   dynamic getImage(String albumArt) {
     return File.fromUri(Uri.parse(albumArt));
+  }
+
+  Widget makeLocalSearchView() {
+    return Card(
+      child: ListTile(
+        title: TextField(
+          cursorColor: Colors.blue,
+          decoration: InputDecoration(
+            hintText: "Search for a Song",
+          ),
+          onChanged: (text) {
+            filtered.clear();
+            _songs.forEach((song) {
+              if (song.title.toLowerCase().contains(text.toLowerCase())) {
+                filtered.add(song);
+              }
+            });
+            setState(() {});
+          },
+          controller: _c,
+          style: TextStyle(
+            color: Colors.blue,
+            fontWeight: FontWeight.w300,
+            fontSize: 20.0,
+          ),
+        ),
+        trailing: Icon(Icons.search),
+      ),
+      elevation: 10.0,
+      margin: EdgeInsets.fromLTRB(10, 10, 10, 20),
+    );
   }
 }
