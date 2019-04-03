@@ -13,7 +13,6 @@ class OnlinePageState extends State<OnlinePage> {
   @override
   void initState() {
     super.initState();
-    HomePageState().stop();
   }
 
   @override

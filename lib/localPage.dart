@@ -3,25 +3,30 @@ import 'dart:io';
 import 'package:flute_music_player/flute_music_player.dart';
 import 'database/DatabaseClient.dart';
 
+MusicFinder audioPlayer = new MusicFinder();
+
+List<Map<String, dynamic>> records;
+List<Song> _songs = new List();
+List<Song> filtered = new List();
+Song currSong;
+int position;
+TextEditingController _c;
+bool beenHereb4 = false;
+
 class HomePage extends StatefulWidget {
   @override
   State<StatefulWidget> createState() => HomePageState();
 }
 
 class HomePageState extends State<HomePage> {
-  MusicFinder audioPlayer = new MusicFinder();
-
-  List<Map<String, dynamic>> records;
-  List<Song> _songs = new List();
-  List<Song> filtered = new List();
-  Song currSong;
-  int position;
-  TextEditingController _c;
 
   @override
   void initState() {
     super.initState();
-    initPlayer();
+    if ( !beenHereb4 ){
+      beenHereb4 = true;
+      initPlayer();
+    }
   }
 
   void initPlayer() async {
@@ -111,8 +116,7 @@ class HomePageState extends State<HomePage> {
     currSong = song;
     final result = await audioPlayer.play(song.uri, isLocal: true);
     audioPlayer.setCompletionHandler(() {
-      print("Completed");
-      stop();
+      stop(song);
       setState(() {
         position = song.duration;
       });
@@ -125,16 +129,9 @@ class HomePageState extends State<HomePage> {
     if (result == 1) setState(() => song.isPlaying = false);
   }
 
-  stop() async {
+  stop(Song song) async {
     final result = await audioPlayer.stop();
-    print("inside");
-    filtered.forEach((song) {
-      if ( song.title == currSong.title ){
-        song.isPlaying = false;
-        return;
-      }
-    });
-//    if (result == 1) setState(() => {});
+    if (result == 1) setState(() => song.isPlaying= false);
   }
 
   dynamic getImage(String albumArt) {
