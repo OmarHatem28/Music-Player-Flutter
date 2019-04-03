@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:music_player/allSongs.dart';
 import 'package:music_player/localPage.dart';
 import 'package:music_player/onlinePage.dart';
 
@@ -8,7 +9,8 @@ void main() => runApp(MyApp());
 class MyApp extends StatelessWidget {
   final List<Tab> myTabs = <Tab>[
     Tab(text: 'Online'),
-    Tab(text: 'Local Songs'),
+    Tab(text: 'All Songs'),
+    Tab(text: 'Playlists'),
   ];
 
   @override
@@ -37,7 +39,10 @@ class MyApp extends StatelessWidget {
     if (text == "Online") {
       return OnlinePage();
     }
-    return HomePage();
+    else if ( text == 'All Songs' ){
+      return AllSongs();
+    }
+    return LocalPage();
   }
 }
 

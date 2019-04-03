@@ -1,45 +1,15 @@
 import 'package:flutter/material.dart';
-import 'dart:io';
-import 'package:flute_music_player/flute_music_player.dart';
-import 'database/DatabaseClient.dart';
+import 'package:music_player/allSongs.dart';
 
-MusicFinder audioPlayer = new MusicFinder();
-
-List<Map<String, dynamic>> records;
-List<Song> _songs = new List();
-List<Song> filtered = new List();
-Song currSong;
-int position;
-TextEditingController _c;
-bool beenHereb4 = false;
-
-class HomePage extends StatefulWidget {
+class LocalPage extends StatefulWidget {
   @override
-  State<StatefulWidget> createState() => HomePageState();
+  State<StatefulWidget> createState() => LocalPageState();
 }
 
-class HomePageState extends State<HomePage> {
-
+class LocalPageState extends State<LocalPage> {
   @override
   void initState() {
     super.initState();
-    if ( !beenHereb4 ){
-      beenHereb4 = true;
-      initPlayer();
-    }
-  }
-
-  void initPlayer() async {
-    _c = new TextEditingController();
-    records = await DatabaseClient().createDB();
-    for (Map<String, dynamic> map in records) {
-      Song song = new Song(map['id'], map['artist'], map['title'], map['album'],
-          map['albumId'], map['duration'], map['uri'], map['albumArt']);
-      _songs.add(song);
-    }
-    setState(() {
-      filtered.addAll(_songs);
-    });
   }
 
   @override
@@ -48,124 +18,58 @@ class HomePageState extends State<HomePage> {
       child: Column(
         children: <Widget>[
           Expanded(
-            child: makeLocalSearchView(),
-            flex: 0,
+            child: GestureDetector(
+              child: Container(
+                child: GridTile(
+                  child: Container(
+                    decoration: BoxDecoration(
+                      image: DecorationImage(
+                        image: AssetImage('images/music_cover.jpg'),
+                        fit: BoxFit.fill,
+                      ),
+                    ),
+                  ),
+                  footer: GridTileBar(
+                    backgroundColor: Colors.black45,
+                    title: Text("All Songs"),
+                    trailing: Icon(
+                      Icons.queue_music,
+                      color: Colors.white,
+                    ),
+                  ),
+                ),
+                margin: EdgeInsets.fromLTRB(20, 50, 20, 50),
+              ),
+              onTap: () {
+//                Navigator.push(context, MaterialPageRoute(builder: (context) => AllSongs() ));
+              },
+            )
           ),
-          Expanded(child: _buildPage()),
+          Expanded(
+            child: Container(
+              child: GridTile(
+                child: Container(
+                  decoration: BoxDecoration(
+                    image: DecorationImage(
+                      image: AssetImage('images/music_cover2.jpg'),
+                      fit: BoxFit.fill,
+                    ),
+                  ),
+                ),
+                footer: GridTileBar(
+                  backgroundColor: Colors.black45,
+                  title: Text("Favorites"),
+                  trailing: Icon(
+                    Icons.favorite,
+                    color: Colors.red,
+                  ),
+                ),
+              ),
+              margin: EdgeInsets.fromLTRB(20, 50, 20, 50),
+            ),
+          ),
         ],
       ),
-      margin: EdgeInsets.fromLTRB(0.0, 10.0, 0, 0),
-//      height: 300,
-    );
-  }
-
-  Widget _buildPage() {
-    if (filtered != null) {
-      return ListView.builder(
-          itemCount: filtered.length * 2,
-          itemBuilder: (context, int i) {
-            if (i.isOdd) return Divider();
-
-            final index = i ~/ 2;
-            return _buildTile(filtered[index]);
-          });
-    }
-    return Text("Hello");
-  }
-
-  Widget _buildTile(Song song) {
-    bool flag = song.isPlaying;
-    return ListTile(
-      title: Text(
-        song.title,
-        overflow: TextOverflow.fade,
-      ),
-      leading: song.albumArt == "null"
-          ? Image.asset(
-              "images/download.jpg",
-              width: 80,
-              height: 60,
-            )
-          : Image.file(
-              getImage(song.albumArt),
-              width: 80,
-              height: 60,
-            ),
-      trailing: Icon(
-        flag ? Icons.pause : Icons.play_arrow,
-      ),
-      subtitle: song.artist == "<unknown>" ? null : Text(song.artist),
-      onTap: () {
-        if (flag) {
-          pause(song);
-        } else {
-          playLocal(song);
-        }
-        setState(() {
-          flag = !flag;
-        });
-      },
-    );
-  }
-
-  playLocal(Song song) async {
-    if (currSong != null && currSong.id != song.id) {
-      currSong.isPlaying = false;
-      audioPlayer.stop();
-    }
-    currSong = song;
-    final result = await audioPlayer.play(song.uri, isLocal: true);
-    audioPlayer.setCompletionHandler(() {
-      stop(song);
-      setState(() {
-        position = song.duration;
-      });
-    });
-    if (result == 1) setState(() => song.isPlaying = true);
-  }
-
-  pause(Song song) async {
-    final result = await audioPlayer.pause();
-    if (result == 1) setState(() => song.isPlaying = false);
-  }
-
-  stop(Song song) async {
-    final result = await audioPlayer.stop();
-    if (result == 1) setState(() => song.isPlaying= false);
-  }
-
-  dynamic getImage(String albumArt) {
-    return File.fromUri(Uri.parse(albumArt));
-  }
-
-  Widget makeLocalSearchView() {
-    return Card(
-      child: ListTile(
-        title: TextField(
-          cursorColor: Colors.blue,
-          decoration: InputDecoration(
-            hintText: "Search for a Song",
-          ),
-          onChanged: (text) {
-            filtered.clear();
-            _songs.forEach((song) {
-              if (song.title.toLowerCase().contains(text.toLowerCase())) {
-                filtered.add(song);
-              }
-            });
-            setState(() {});
-          },
-          controller: _c,
-          style: TextStyle(
-            color: Colors.blue,
-            fontWeight: FontWeight.w300,
-            fontSize: 20.0,
-          ),
-        ),
-        trailing: Icon(Icons.search),
-      ),
-      elevation: 10.0,
-      margin: EdgeInsets.fromLTRB(10, 10, 10, 20),
     );
   }
 }
