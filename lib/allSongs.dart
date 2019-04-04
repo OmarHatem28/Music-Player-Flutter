@@ -12,6 +12,7 @@ Song currSong;
 int position;
 TextEditingController _c;
 bool beenHereb4 = false;
+String state = "";
 
 class AllSongs extends StatefulWidget {
   @override
@@ -19,11 +20,10 @@ class AllSongs extends StatefulWidget {
 }
 
 class AllSongsState extends State<AllSongs> {
-
   @override
   void initState() {
     super.initState();
-    if ( !beenHereb4 ){
+    if (!beenHereb4) {
       beenHereb4 = true;
       initPlayer();
     }
@@ -31,7 +31,14 @@ class AllSongsState extends State<AllSongs> {
 
   void initPlayer() async {
     _c = new TextEditingController();
-    records = await DatabaseClient().createDB();
+    state = await DatabaseClient().createDB();
+    // if table is created then insert songs first
+    setState(() {});
+    if (state.isNotEmpty) {
+      await DatabaseClient().insert();
+    }
+    records = await DatabaseClient().getSongs();
+
     for (Map<String, dynamic> map in records) {
       Song song = new Song(map['id'], map['artist'], map['title'], map['album'],
           map['albumId'], map['duration'], map['uri'], map['albumArt']);
@@ -60,7 +67,7 @@ class AllSongsState extends State<AllSongs> {
   }
 
   Widget _buildPage() {
-    if (filtered != null) {
+    if (filtered != null && filtered.isNotEmpty) {
       return ListView.builder(
           itemCount: filtered.length * 2,
           itemBuilder: (context, int i) {
@@ -69,8 +76,19 @@ class AllSongsState extends State<AllSongs> {
             final index = i ~/ 2;
             return _buildTile(filtered[index]);
           });
+    } else if (state.isNotEmpty) {
+      return Center(
+        child: Column(
+          children: <Widget>[
+            CircularProgressIndicator(),
+            Text("Getting All Your Songs, Please Wait..."),
+          ],
+        ),
+      );
     }
-    return Text("Hello");
+    return Center(
+      child: Text("No Songs Avaiable."),
+    );
   }
 
   Widget _buildTile(Song song) {
@@ -82,15 +100,15 @@ class AllSongsState extends State<AllSongs> {
       ),
       leading: song.albumArt == "null"
           ? Image.asset(
-        "images/download.jpg",
-        width: 80,
-        height: 60,
-      )
+              "images/download.jpg",
+              width: 80,
+              height: 60,
+            )
           : Image.file(
-        getImage(song.albumArt),
-        width: 80,
-        height: 60,
-      ),
+              getImage(song.albumArt),
+              width: 80,
+              height: 60,
+            ),
       trailing: Icon(
         flag ? Icons.pause : Icons.play_arrow,
       ),
@@ -131,7 +149,7 @@ class AllSongsState extends State<AllSongs> {
 
   stop(Song song) async {
     final result = await audioPlayer.stop();
-    if (result == 1) setState(() => song.isPlaying= false);
+    if (result == 1) setState(() => song.isPlaying = false);
   }
 
   dynamic getImage(String albumArt) {

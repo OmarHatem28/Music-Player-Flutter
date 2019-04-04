@@ -5,34 +5,29 @@ import 'package:sqflite/sqflite.dart';
 class DatabaseClient {
   Song song;
   List<Song> _songs;
-  Database _db;
+  static Database _db;
   List<Map<String, dynamic>> records;
   int co = 0;
 
-  Future createDB() async {
+
+  Future<String> createDB() async {
+    String state = "";
     var databasesPath = await getDatabasesPath();
     String path = join(databasesPath, 'mySongs.db');
 
     _db = await openDatabase(path, version: 1,
         onCreate: (Database db, int version) async {
       // When creating the db, create the table
+      state = "Creates";
       await db.execute(
           'CREATE TABLE Song (id INTEGER, title TEXT, duration NUMBER, albumArt TEXT, album TEXT, uri TEXT, artist TEXT, albumId NUMBER, isFav number NOT NULL default 0, count number not null default 0)');
     });
 
-    //TODO: check for new songs added using size of current table and number of songs available
-    records = await _db.query('Song');
-    if (records.isEmpty) {
-      bool flag = await insert();
-      // if items are added to the DB
-      if ( flag ){
-        // fetch data from table again after insertion
-        records = await _db.query('Song');
-      }
-    }
+    return state;
+  }
 
-    return records;
-
+  Future getSongs() async {
+    return await _db.query('Song');
   }
 
   Future<bool> insert() async {
@@ -61,7 +56,7 @@ class DatabaseClient {
       return false;
     }
     print("Passed WarhiT");
-    if ( co > 0 )
+    if (co > 0)
       return true;
     else
       return false;
