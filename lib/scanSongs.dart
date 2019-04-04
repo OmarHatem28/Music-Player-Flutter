@@ -4,11 +4,9 @@ import 'database/DatabaseClient.dart';
 class ScanSong extends StatefulWidget {
   @override
   State<StatefulWidget> createState() => ScanSongState();
-
 }
 
 class ScanSongState extends State<ScanSong> {
-
   @override
   void initState() {
     super.initState();
@@ -31,13 +29,24 @@ class ScanSongState extends State<ScanSong> {
         ),
         body: Container(
           child: Center(
-            child: Text("Scanning :D"),
-          ),
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: <Widget>[
+                Text("Scanning"),
+                FlatButton(
+                  color: Colors.red,
+                  child: Card(
+                    color: Colors.blue,
+                    elevation: 10.0,
+                    child: Text("Finished"),
+                  ),
+                  onPressed: () => Navigator.pop(context),
+                ),
+              ],
+            ),
+          )
         ),
       ),
     );
   }
-
-
-
 }

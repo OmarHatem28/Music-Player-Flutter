@@ -42,29 +42,7 @@ class MyHome extends StatelessWidget {
             return buildNavPage(tab.text, context);
           }).toList(),
         ),
-        drawer: Container(
-            margin: EdgeInsets.fromLTRB(0, 0, 80, 0),
-//            padding: EdgeInsets.fromLTRB(10, 0, 10, 10),
-            color: Colors.white,
-            child: Column(
-              children: <Widget>[
-                Image.asset(
-                  'images/music_cover.jpg',
-                  height: 200.0,
-                  fit: BoxFit.fill,
-                ),
-                Divider(),
-                ListTile(
-                  title: Text("Scan for New Songs"),
-                  onTap: () {
-                    print("Pressed");
-                    Navigator.of(context).pushNamed('./scanSongs');
-                  },
-                  trailing: Icon(Icons.search),
-                ),
-                Divider(),
-              ],
-            )),
+        drawer: buildDrawer(context),
       ),
     );
   }
@@ -76,5 +54,31 @@ class MyHome extends StatelessWidget {
       return AllSongs();
     }
     return PlayList();
+  }
+
+  Widget buildDrawer(BuildContext context) {
+    return Container(
+      margin: EdgeInsets.fromLTRB(0, 0, 80, 0),
+      color: Colors.white,
+      child: Column(
+        children: <Widget>[
+          Image.asset(
+            'images/music_cover.jpg',
+            height: 200.0,
+            fit: BoxFit.fill,
+          ),
+          Divider(),
+          ListTile(
+            title: Text("Scan for New Songs"),
+            onTap: () {
+              print("Pressed");
+              Navigator.of(context).pushNamed('./scanSongs');
+            },
+            trailing: Icon(Icons.search),
+          ),
+          Divider(),
+        ],
+      ),
+    );
   }
 }
