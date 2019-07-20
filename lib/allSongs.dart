@@ -13,6 +13,8 @@ int position;
 TextEditingController _c;
 bool beenHereb4 = false;
 String state = "";
+int _currentIndex = 0;
+int sorting = 0;
 
 class AllSongs extends StatefulWidget {
   @override
@@ -33,7 +35,6 @@ class AllSongsState extends State<AllSongs> {
     _c = new TextEditingController();
     state = await DatabaseClient().createDB();
     // if table is created then insert songs first
-    setState(() {});
     if (state.isNotEmpty) {
       await DatabaseClient().insert();
     }
@@ -51,18 +52,78 @@ class AllSongsState extends State<AllSongs> {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      child: Column(
+    return Scaffold(
+      bottomNavigationBar: BottomNavigationBar(
+        currentIndex: _currentIndex,
+        items: [
+          BottomNavigationBarItem(
+              icon: Icon(Icons.add_a_photo),
+              title: Text("first"),
+              activeIcon: Icon(Icons.favorite)),
+          BottomNavigationBarItem(
+              icon: Icon(Icons.search), title: Text("second")),
+          BottomNavigationBarItem(
+              icon: Icon(Icons.queue), title: Text("third")),
+        ],
+        onTap: (index) {
+          setState(() {
+            _currentIndex = index;
+          });
+        },
+      ),
+      body: Column(
         children: <Widget>[
           Expanded(
-            child: makeLocalSearchView(),
+            child: Row(
+              children: <Widget>[
+                Expanded(
+                  child: makeLocalSearchView(),
+                  flex: 10,
+                ),
+                Expanded(
+                  child: PopupMenuButton(
+                    itemBuilder: (context) => [
+                          PopupMenuItem(
+                            value: 1,
+                            child: ListTile(
+                              title: Text("A~Z"),
+                              subtitle: Text("Sort Alphabetically"),
+                            ),
+                          ),
+                          PopupMenuItem(
+                            value: 2,
+                            child: ListTile(
+                              title: Text("Z~A"),
+                              subtitle: Text("Sort Alphabetically Reversed"),
+                            ),
+                          ),
+                        ],
+                    icon: Icon(Icons.sort),
+                    tooltip: "Sort",
+                    onSelected: (value) {
+                      if (value == 1) {
+                        sorting = 1;
+                        filtered.sort(
+                            (Song a, Song b) => a.title.compareTo(b.title)
+                        );
+                      } else {
+                        sorting = 2;
+                        filtered.sort(
+                                (Song a, Song b) => b.title.compareTo(a.title)
+                        );
+                      }
+                      setState(() {});
+                    },
+                  ),
+                  flex: 2,
+                ),
+              ],
+            ),
             flex: 0,
           ),
           Expanded(child: _buildPage()),
         ],
       ),
-      margin: EdgeInsets.fromLTRB(0.0, 10.0, 0, 0),
-//      height: 300,
     );
   }
 
@@ -161,7 +222,7 @@ class AllSongsState extends State<AllSongs> {
       child: ListTile(
         title: TextField(
           cursorColor: Colors.blue,
-          decoration: InputDecoration(
+          decoration: InputDecoration.collapsed(
             hintText: "Search for a Song",
           ),
           onChanged: (text) {
@@ -171,7 +232,18 @@ class AllSongsState extends State<AllSongs> {
                 filtered.add(song);
               }
             });
-            setState(() {});
+            setState(() {
+              if ( sorting == 1 ){
+                filtered.sort(
+                        (Song a, Song b) => a.title.compareTo(b.title)
+                );
+              }
+              if ( sorting == 2 ){
+                filtered.sort(
+                        (Song a, Song b) => b.title.compareTo(a.title)
+                );
+              }
+            });
           },
           controller: _c,
           style: TextStyle(

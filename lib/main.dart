@@ -6,6 +6,8 @@ import 'package:music_player/scanSongs.dart';
 
 void main() => runApp(MyApp());
 
+bool theme = true; // true white, false black
+
 class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
@@ -13,6 +15,7 @@ class MyApp extends StatelessWidget {
       routes: <String, WidgetBuilder>{
         './scanSongs': (BuildContext context) => ScanSong(),
       },
+      theme: theme ? null : ThemeData.dark(),
       home: MyHome(),
 //      theme: ThemeData.dark(),
     );
@@ -31,6 +34,7 @@ class MyHome extends StatelessWidget {
     return DefaultTabController(
       length: myTabs.length,
       child: Scaffold(
+        resizeToAvoidBottomPadding: false,
         appBar: AppBar(
           title: Text("Music player"),
           bottom: TabBar(
@@ -71,12 +75,19 @@ class MyHome extends StatelessWidget {
           ListTile(
             title: Text("Scan for New Songs"),
             onTap: () {
-              print("Pressed");
               Navigator.of(context).pushNamed('./scanSongs');
             },
             trailing: Icon(Icons.search),
           ),
           Divider(),
+          ListTile(
+            title: Text("Change Theme"),
+            onTap: () {
+              theme = !theme;
+              // TODO: find a way to make something like setState in stateless widgets
+            },
+            trailing: Icon(Icons.invert_colors),
+          ),
         ],
       ),
     );
